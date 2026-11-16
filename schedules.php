@@ -1,3 +1,23 @@
+<?php
+session_start();
+require_once 'config.php';
+
+// Fetch match schedules
+$schedules_result = $conn->query("
+    SELECT * FROM matches_schedules 
+    ORDER BY event_date ASC
+");
+
+// Combined query: Fetch approved facility bookings
+$approved_bookings = $conn->query("
+    SELECT fb.facility_name, fb.booking_date, fb.time_slot, u.name as booked_by
+    FROM facility_bookings fb
+    JOIN users u ON fb.user_id = u.id
+    WHERE fb.status = 'approved' AND fb.booking_date >= CURDATE()
+    ORDER BY fb.booking_date ASC
+");
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
