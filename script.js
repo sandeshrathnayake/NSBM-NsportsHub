@@ -18,3 +18,19 @@ if (loginLink) {
 if (loginBtnModal) {
     loginBtnModal.addEventListener('click', () => authModal.classList.add('show'));
 }
+if (closeBtnModal) {
+    closeBtnModal.addEventListener('click', () => authModal.classList.remove('show', 'slide'));
+}
+
+if (avatarCircle) {
+    avatarCircle.addEventListener('click', () => profileBox.classList.toggle('show'));
+}
+
+if (alertBox) {
+    setTimeout(() => alertBox.classList.add('show'), 50);
+
+    setTimeout(() => {
+        alertBox.classList.remove('show');
+        setTimeout(() => alertBox.remove(), 1000);
+    }, 4000);
+}
