@@ -77,3 +77,85 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_booking'])) {
             }
         }
     }
+       header('Location: facility_booking.php');
+    exit();
+}
+
+// Fetch this student's past & current facility bookings
+$user_bookings = [];
+if ($user_id) {
+    $stmt = $conn->prepare("
+        SELECT * FROM facility_bookings 
+        WHERE user_id = ? 
+        ORDER BY created_at DESC
+    ");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $user_bookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
+
+$alerts = $_SESSION['alerts'] ?? [];
+unset($_SESSION['alerts']);
+
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facility Bookings - NSBM SportsHub</title>
+    <link rel="stylesheet" href="style.css?v=9.9">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body class="profile-page-body">
+
+    <!-- NAVIGATION HEADER -->
+    <header>
+        <a href="index.php" class="logo">
+            <img src="logo2.png" alt="Logo">
+        </a>
+        <nav>
+            <a href="index.php">Home</a>
+            <a href="sports_clubs.php">Sports Clubs</a>
+            <a href="schedules.php">Schedules & Matches</a>
+            <a href="facility_booking.php" style="color: #0abf30;">Facility Bookings</a>
+        </nav>
+        <div class="user-auth">
+            <?php if (!empty($name)): ?>
+            <div class="profile-box">
+                <div class="avatar-circle"><?= strtoupper($name[0]) ?></div>
+                <div class="dropdown">
+                    <a href="profile.php">My account</a>
+                    <?php if (($_SESSION['role'] ?? '') === 'admin'): ?>
+                        <a href="admin.php">Admin Panel</a>
+                    <?php endif; ?>
+                    <a href="logout.php">Logout</a>
+                </div>
+            </div>
+            <?php else: ?>
+            <button type="button" class="login-btn-modal">Login</button>
+            <?php endif; ?>
+        </div>
+    </header>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+?>
