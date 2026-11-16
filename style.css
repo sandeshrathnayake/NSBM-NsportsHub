@@ -302,4 +302,51 @@ nav a:hover {
   cursor: pointer;
   z-index: 10;
 }
+.profile-box { position: relative; }
 
+.profile-box .avatar-circle {
+  width: 40px;
+  height: 40px;
+  background: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  font-weight: 600;
+  color: #222;
+  cursor: pointer;
+}
+
+.profile-box .dropdown {
+  position: absolute;
+  inset: 50px 0 auto auto;
+  width: 140px;
+  padding: 10px;
+  background: #fff;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 5px 15px rgb(0 0 0 / .2);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity .3s, transform .3s;
+}
+
+.profile-box.show .dropdown {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.profile-box .dropdown a {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  text-decoration: none;
+  transition: .2s;
+}
+
+.profile-box .dropdown a:hover { background: #eee; }
