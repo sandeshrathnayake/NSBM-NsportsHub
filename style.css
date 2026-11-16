@@ -186,24 +186,4 @@ nav a:hover {
     line-height: 1.6;
     margin: 0;
 }
-.auth-modal {
-    position: fixed;
-    width: 440px !important;
-    height: 440px;
-    background: rgba(0,0,0,.3);
-    border: 2px solid rgba(255,255,255,.3);
-    border-radius: 20px;
-    box-shadow: 0 0 30px rgba(0,0,0,.3);
-    backdrop-filter: blur(20px); 
-    -webkit-backdrop-filter: blur(20px);
-    color: white;
-    inset: 0;
-    margin: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    transform: scale(0);
-    transition: height .2s ease, transform .8s ease;
-    z-index: 1000;
-}
+
