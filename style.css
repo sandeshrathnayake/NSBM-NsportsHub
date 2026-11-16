@@ -160,4 +160,12 @@ nav a:hover {
     box-sizing: border-box;
     border: 1px solid #e2e8f0;
 }
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+}
 
+.card-icon {
+    font-size: 38px;
+    margin-bottom: 20px;
+}
