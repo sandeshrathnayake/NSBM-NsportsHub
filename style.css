@@ -128,3 +128,9 @@ nav a:hover {
 .hero-btn.secondary:hover {
     background: rgba(0, 0, 0, 0.6);
 }
+.cards-section {
+    background: #f8fafc;
+    padding: 50px 20px 80px;
+    display: flex;
+    justify-content: center;
+}
