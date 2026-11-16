@@ -1,3 +1,52 @@
+<?php
+session_start();
+require_once 'config.php';
+
+$user_id = $_SESSION['user_id'] ?? null;
+$name = $_SESSION['name'] ?? null;
+
+$alerts = $_SESSION['alerts'] ?? [];
+unset($_SESSION['alerts']);
+
+if (isset($_POST['join_btn'])) {
+    $club_name = trim($_POST['club_name'] ?? '');
+
+    if (!$user_id) {
+        $_SESSION['alerts'][] = ['type' => 'error', 'message' => 'Please login first!'];
+    } else {
+        $check = $conn->prepare("SELECT id FROM clubs WHERE club_name = ?");
+        $check->bind_param("s", $club_name);
+        $check->execute();
+        $club_exists = $check->get_result()->num_rows > 0;
+
+        if (!$club_exists) {
+            $_SESSION['alerts'][] = ['type' => 'error', 'message' => 'Please choose a sport from the list.'];
+        } else {
+            $old = $conn->prepare("SELECT status FROM user_clubs WHERE user_id = ? AND club_name = ?");
+            $old->bind_param("is", $user_id, $club_name);
+            $old->execute();
+            $old_row = $old->get_result()->fetch_assoc();
+
+            if (!$old_row) {
+                $stmt = $conn->prepare("INSERT INTO user_clubs (user_id, club_name, status) VALUES (?, ?, 'pending')");
+                $stmt->bind_param("is", $user_id, $club_name);
+                $stmt->execute();
+                $_SESSION['alerts'][] = ['type' => 'success', 'message' => 'Request sent! Waiting for approval.'];
+            } elseif ($old_row['status'] === 'rejected') {
+                $stmt = $conn->prepare("UPDATE user_clubs SET status = 'pending' WHERE user_id = ? AND club_name = ?");
+                $stmt->bind_param("is", $user_id, $club_name);
+                $stmt->execute();
+                $_SESSION['alerts'][] = ['type' => 'success', 'message' => 'Request sent again!'];
+            } else {
+                $_SESSION['alerts'][] = ['type' => 'error', 'message' => 'You already requested ' . $club_name . ' (' . $old_row['status'] . ').'];
+            }
+        }
+    }
+
+    header('Location: sports_clubs.php');
+    exit();
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
