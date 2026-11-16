@@ -79,3 +79,43 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- COMBINED APPROVED FACILITY RESERVATIONS -->
+            <div class="view-header" style="margin-top: 40px;">
+                <h2><i class='bx bx-building-house'></i> Reserved Facility Availability</h2>
+            </div>
+
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Reserved Venue</th>
+                            <th>Reserved Date</th>
+                            <th>Time Slot</th>
+                            <th>Reserved By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if ($approved_bookings && $approved_bookings->num_rows > 0): ?>
+                            <?php while ($booking = $approved_bookings->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($booking['facility_name']) ?></td>
+                                    <td><?= date('M d, Y', strtotime($booking['booking_date'])) ?></td>
+                                    <td><?= htmlspecialchars($booking['time_slot']) ?></td>
+                                    <td><?= htmlspecialchars($booking['booked_by']) ?></td>
+                                </tr>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="4" class="no-data">No facilities currently reserved. All grounds available!</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+</html>
