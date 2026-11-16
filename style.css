@@ -169,3 +169,20 @@ nav a:hover {
     font-size: 38px;
     margin-bottom: 20px;
 }
+.icon-green { color: #0abf30; }
+.icon-blue { color: #2563eb; }
+.icon-yellow { color: #eab308; }
+
+.card h3 {
+    font-size: 20px;
+    color: #1e293b;
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+
+.card p {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.6;
+    margin: 0;
+}
