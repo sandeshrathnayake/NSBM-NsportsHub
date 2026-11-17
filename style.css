@@ -389,3 +389,41 @@ nav a:hover {
     background: #0b1120; text-align: center; padding: 20px;
     font-size: 13px; color: #64748b; border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
+.profile-page-body {
+    background: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url('background.jpg') no-repeat center center/cover;
+    min-height: 100vh;
+}
+
+.profile-section {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 120px 20px 60px; box-sizing: border-box;
+}
+
+.profile-card { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 500px; }
+.profile-icon-circle {
+    width: 110px; height: 110px; border: 3px solid white; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; margin-bottom: 25px;
+    background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px);
+}
+.profile-icon-circle i { font-size: 65px; color: white; }
+
+.info-pill {
+    width: 100%; max-width: 420px; border: 2px solid white; border-radius: 40px;
+    padding: 12px 20px; margin-bottom: 15px; text-align: center;
+    background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px); box-sizing: border-box;
+}
+.info-pill span { color: white; font-size: 16px; font-weight: 500; }
+
+.unified-clubs-card {
+    width: 100%; max-width: 420px; border: 2px solid white; border-radius: 20px;
+    overflow: hidden; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px);
+    box-sizing: border-box; margin-top: 5px;
+}
+
+.clubs-card-header { width: 100%; padding: 14px 20px; border-bottom: 2px solid white; text-align: center; background: rgba(255, 255, 255, 0.05); }
+.clubs-card-header span { color: white; font-size: 16px; font-weight: 500; }
+.clubs-card-body { padding: 20px 25px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.club-item { color: white; font-size: 15px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.white-bullet { color: white; font-size: 18px; }
+.no-clubs { color: #cbd5e1; font-size: 14px; text-align: center; margin: 0; }
+.no-clubs a { color: #0abf30; text-decoration: underline; }
