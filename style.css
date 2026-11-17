@@ -350,3 +350,21 @@ nav a:hover {
 }
 
 .profile-box .dropdown a:hover { background: #eee; }
+.site-footer {
+    background: #0f172a;
+    color: #cbd5e1;
+    padding-top: 50px;
+    margin-top: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
