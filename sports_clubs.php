@@ -47,6 +47,24 @@ if (isset($_POST['join_btn'])) {
     exit();
 }
 
+$clubs = [];
+$result = $conn->query("SELECT club_name, description, icon, image FROM clubs ORDER BY club_name");
+while ($row = $result->fetch_assoc()) {
+    $clubs[] = $row;
+}
+
+$my_requests = [];
+if ($user_id) {
+    $stmt = $conn->prepare("SELECT club_name, status FROM user_clubs WHERE user_id = ? ORDER BY joined_at DESC");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $my_result = $stmt->get_result();
+    while ($row = $my_result->fetch_assoc()) {
+        $my_requests[$row['club_name']] = $row['status'];
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
