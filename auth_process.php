@@ -93,13 +93,11 @@ if (isset($_POST['login_btn'])) {
             'message' => 'Welcome back, ' . htmlspecialchars($user['name']) . '!'
         ];
 
-        // DIRECT REDIRECT FOR ADMINS
         if ($role === 'admin') {
             header('Location: admin.php');
             exit();
         }
 
-        // REDIRECT FOR STUDENTS
         header('Location: index.php');
         exit();
     } else {
