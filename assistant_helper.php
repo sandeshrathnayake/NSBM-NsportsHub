@@ -1,116 +1,196 @@
 <?php
+error_reporting(0);
+ini_set('display_errors', 0);
 session_start();
 header('Content-Type: application/json');
+
 require_once 'config.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['reply' => 'Invalid request method.']);
-    exit();
-}
+$apiKey = 'YOUR_GEMINI_API_KEY';
 
 $input = json_decode(file_get_contents('php://input'), true);
 $userMessage = trim($input['message'] ?? '');
 
-if ($userMessage === '') {
-    echo json_encode(['reply' => 'Please type a message so I can help you!']);
-    exit();
+if (empty($userMessage)) {
+    echo json_encode(['reply' => 'Please enter a message.']);
+    exit;
 }
 
-$user_id = $_SESSION['user_id'] ?? null;
-$identifier = $user_id ? 'user_' . $user_id : 'ip_' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
-$today = date('Y-m-d');
-$daily_limit = 15;
+if (mb_strlen($userMessage) > 300) {
+    $userMessage = mb_substr($userMessage, 0, 300);
+}
 
 $conn->query("
     CREATE TABLE IF NOT EXISTS ai_usage_limits (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        identifier VARCHAR(100) NOT NULL,
+        user_identifier VARCHAR(100) NOT NULL,
         usage_date DATE NOT NULL,
         request_count INT DEFAULT 0,
-        UNIQUE KEY unique_user_day (identifier, usage_date)
+        tokens_used INT DEFAULT 0,
+        UNIQUE KEY unique_user_date (user_identifier, usage_date)
     )
 ");
 
-$stmt = $conn->prepare("SELECT request_count FROM ai_usage_limits WHERE identifier = ? AND usage_date = ?");
-$stmt->bind_param("ss", $identifier, $today);
-$stmt->execute();
-$res = $stmt->get_result()->fetch_assoc();
-$current_count = $res ? intval($res['request_count']) : 0;
+$isLoggedIn = isset($_SESSION['user_id']);
+$identifier = $isLoggedIn ? 'user_' . $_SESSION['user_id'] : 'ip_' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+$today = date('Y-m-d');
 
-if ($current_count >= $daily_limit) {
+$dailyMsgLimit   = $isLoggedIn ? 15 : 4;
+$dailyTokenLimit = $isLoggedIn ? 12000 : 3000;
+
+$currentMsgs = 0;
+$currentTokens = 0;
+
+$stmt = $conn->prepare("SELECT request_count, tokens_used FROM ai_usage_limits WHERE user_identifier = ? AND usage_date = ?");
+if ($stmt) {
+    $stmt->bind_param("ss", $identifier, $today);
+    $stmt->execute();
+    $usage = $stmt->get_result()->fetch_assoc();
+    $currentMsgs   = $usage['request_count'] ?? 0;
+    $currentTokens = $usage['tokens_used'] ?? 0;
+}
+
+if ($currentMsgs >= $dailyMsgLimit || $currentTokens >= $dailyTokenLimit) {
+    $limitMsg = $isLoggedIn
+        ? "You have reached your daily AI usage limit ({$dailyMsgLimit} messages). Please try again tomorrow."
+        : "You have reached the daily guest limit ({$dailyMsgLimit} messages). Please log in to continue using NSport Pulse AI.";
     echo json_encode([
-        'reply' => "You have reached your daily limit of {$daily_limit} AI assistant messages. Please try again tomorrow!"
+        'reply' => $limitMsg,
+        'remaining_messages' => 0
     ]);
-    exit();
+    exit;
 }
 
-$schedulesContext = "Upcoming Matches & Training Schedules:\n";
-$schQuery = $conn->query("SELECT title, sport_type, event_type, event_date, event_time, venue FROM matches_schedules WHERE status = 'UPCOMING' ORDER BY event_date ASC LIMIT 8");
-if ($schQuery && $schQuery->num_rows > 0) {
-    while ($row = $schQuery->fetch_assoc()) {
-        $schedulesContext .= "- {$row['title']} ({$row['sport_type']} - {$row['event_type']}) on {$row['event_date']} at {$row['event_time']} | Venue: {$row['venue']}\n";
+$clubsList = [];
+$cRes = $conn->query("SELECT club_name FROM clubs ORDER BY club_name");
+if ($cRes) {
+    while ($r = $cRes->fetch_assoc()) {
+        $clubsList[] = $r['club_name'];
     }
-} else {
-    $schedulesContext .= "- No upcoming fixtures posted at the moment.\n";
 }
+$clubsText = !empty($clubsList) ? implode(', ', $clubsList) : 'Athletics, Badminton, Chess, Cricket, Football, Rugby, Swimming, Table Tennis, Tennis, Volleyball';
 
-$clubsContext = "Active Sports Clubs on NSBM SportsHub:\n";
-$clubQuery = $conn->query("SELECT DISTINCT club_name, COUNT(user_id) as members FROM user_clubs WHERE status = 'approved' GROUP BY club_name");
-if ($clubQuery && $clubQuery->num_rows > 0) {
-    while ($c = $clubQuery->fetch_assoc()) {
-        $clubsContext .= "- {$c['club_name']} ({$c['members']} active members)\n";
+$matchesList = [];
+$mRes = $conn->query("SELECT title, sport_type, event_date, event_time, venue FROM matches_schedules WHERE event_date >= CURDATE() ORDER BY event_date ASC LIMIT 5");
+if ($mRes) {
+    while ($r = $mRes->fetch_assoc()) {
+        $matchesList[] = "{$r['title']} ({$r['sport_type']}) on {$r['event_date']} at {$r['event_time']} - {$r['venue']}";
     }
-} else {
-    $clubsContext .= "- Athletics, Basketball, Cricket, Badminton, Football, Swimming, Volleyball, Rugby, Table Tennis, Chess, Netball, Hockey.\n";
 }
+$matchesText = !empty($matchesList) ? implode(' | ', $matchesList) : 'No upcoming matches scheduled right now.';
 
-$systemPrompt = "You are the official NSBM SportsHub AI Assistant for NSBM Green University students. 
-Be helpful, concise, friendly, and accurate. Answer questions about joining sports clubs, checking match schedules, and booking campus sports facilities (grounds, indoor courts, equipment).
-Use the live campus database context below when answering:
-{$schedulesContext}
-{$clubsContext}";
-
-$apiKey = 'YOUR_GEMINI_API_KEY';
-$apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" . $apiKey;
+$systemPrompt = "You are NSport Pulse AI, the official assistant for NSBM SportsHub (NSBM Green University). "
+    . "STRICT RULES: "
+    . "1. Reply ONLY in clear, professional English. Never use Sinhala characters or Sinhala words even if the user writes in Sinhala. "
+    . "2. NEVER use any emojis, emoticons, or decorative symbols in your response. Use plain text only. "
+    . "3. Keep answers concise, accurate, and under 120 words. "
+    . "Available Sports Clubs: {$clubsText}. "
+    . "Upcoming Matches: {$matchesText}. "
+    . "To join a club, students go to 'Sports Clubs', select a sport, and submit a join request (must be logged in). "
+    . "To book a facility, students go to 'Facility Bookings', select a venue, date, and time slot, and submit for admin approval.";
 
 $payload = [
     "system_instruction" => [
-        "parts" => [["text" => $systemPrompt]]
+        "parts" => [
+            ["text" => $systemPrompt]
+        ]
     ],
     "contents" => [
         [
             "role" => "user",
-            "parts" => [["text" => $userMessage]]
+            "parts" => [
+                ["text" => $userMessage]
+            ]
         ]
+    ],
+    "generationConfig" => [
+        "maxOutputTokens" => 350,
+        "temperature" => 0.6
     ]
 ];
 
-$ch = curl_init($apiUrl);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+$modelsToTry = ['gemini-flash-latest', 'gemini-2.0-flash', 'gemini-2.5-flash-preview-04-17'];
 
-$response = curl_exec($ch);
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-curl_close($ch);
+$listCh = curl_init("https://generativelanguage.googleapis.com/v1beta/models?key=" . urlencode($apiKey));
+curl_setopt($listCh, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($listCh, CURLOPT_TIMEOUT, 10);
+curl_setopt($listCh, CURLOPT_SSL_VERIFYPEER, false);
+curl_setopt($listCh, CURLOPT_SSL_VERIFYHOST, false);
+$listRes = curl_exec($listCh);
+curl_close($listCh);
 
-if ($httpCode === 200 && $response) {
-    $data = json_decode($response, true);
-    $reply = $data['candidates'][0]['content']['parts'][0]['text'] ?? "Sorry, I couldn't process that right now.";
-
-    // Increment daily usage counter
-    $upStmt = $conn->prepare("
-        INSERT INTO ai_usage_limits (identifier, usage_date, request_count) 
-        VALUES (?, ?, 1) 
-        ON DUPLICATE KEY UPDATE request_count = request_count + 1
-    ");
-    $upStmt->bind_param("ss", $identifier, $today);
-    $upStmt->execute();
-
-    echo json_encode(['reply' => $reply]);
-} else {
-    echo json_encode(['reply' => 'The AI assistant is temporarily unavailable. Please try again later.']);
+if ($listRes) {
+    $listData = json_decode($listRes, true);
+    if (!empty($listData['models'])) {
+        $detected = [];
+        foreach ($listData['models'] as $m) {
+            $mName = str_replace('models/', '', $m['name'] ?? '');
+            $methods = $m['supportedGenerationMethods'] ?? [];
+            if (in_array('generateContent', $methods) && stripos($mName, 'flash') !== false && stripos($mName, 'image') === false && stripos($mName, 'audio') === false) {
+                $detected[] = $mName;
+            }
+        }
+        if (!empty($detected)) {
+            $modelsToTry = array_unique(array_merge($detected, $modelsToTry));
+        }
+    }
 }
-//continue pending!
+
+$lastError = 'No response from API';
+
+foreach ($modelsToTry as $model) {
+    $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . urlencode($apiKey);
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+    curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+    $response = curl_exec($ch);
+    $curlErr  = curl_error($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode === 200 && $response) {
+        $data = json_decode($response, true);
+        $aiReply = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+
+        if ($aiReply) {
+            $aiReply = preg_replace('/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{1F700}-\x{1F77F}\x{1F780}-\x{1F7FF}\x{1F800}-\x{1F8FF}\x{1F900}-\x{1F9FF}\x{1FA00}-\x{1FA6F}\x{1FA70}-\x{1FAFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}\x{0D80}-\x{0DFF}]/u', '', $aiReply);
+            $aiReply = trim(preg_replace('/\s{2,}/', ' ', $aiReply));
+
+            $tokensUsed = $data['usageMetadata']['totalTokenCount'] ?? 400;
+
+            $update = $conn->prepare("
+                INSERT INTO ai_usage_limits (user_identifier, usage_date, request_count, tokens_used)
+                VALUES (?, ?, 1, ?)
+                ON DUPLICATE KEY UPDATE
+                    request_count = request_count + 1,
+                    tokens_used = tokens_used + ?
+            ");
+            if ($update) {
+                $update->bind_param("ssii", $identifier, $today, $tokensUsed, $tokensUsed);
+                $update->execute();
+            }
+
+            $remaining = max(0, $dailyMsgLimit - ($currentMsgs + 1));
+
+            echo json_encode([
+                'reply' => $aiReply,
+                'remaining_messages' => $remaining
+            ]);
+            exit;
+        }
+    }
+
+    $errData = json_decode($response, true);
+    $lastError = $errData['error']['message'] ?? ($curlErr ?: "HTTP {$httpCode}");
+}
+
+echo json_encode([
+    'reply' => "Error: {$lastError}"
+]);
