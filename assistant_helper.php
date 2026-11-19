@@ -113,3 +113,4 @@ if ($httpCode === 200 && $response) {
 } else {
     echo json_encode(['reply' => 'The AI assistant is temporarily unavailable. Please try again later.']);
 }
+//continue pending!
