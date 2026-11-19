@@ -33,6 +33,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_booking'])) {
         'Volleyball Court'
     ];
 
+    $allowed_slots = [
+        '08:00 - 10:00',
+        '10:00 - 12:00',
+        '12:00 - 14:00',
+        '14:00 - 16:00',
+        '16:00 - 18:00',
+        '18:00 - 20:00'
+    ];
+
+    if (!in_array($facility_name, $allowed_facilities, true) || 
+        !in_array($time_slot, $allowed_slots, true) || 
+        empty($booking_date) || empty($purpose)) {
+        $_SESSION['alerts'][] = ['type' => 'error', 'message' => 'Please fill in all fields with valid options!'];
+    } elseif ($booking_date < date('Y-m-d')) {
+        $_SESSION['alerts'][] = ['type' => 'error', 'message' => 'Booking date cannot be in the past!'];
+    } else {
+        $check = $conn->prepare("
+            SELECT id FROM facility_bookings 
+            WHERE facility_name = ? AND booking_date = ? AND time_slot = ? 
+            AND status IN ('pending', 'approved')
+        ");
+        $check->bind_param("sss", $facility_name, $booking_date, $time_slot);
+        $check->execute();
+        
+        if ($check->get_result()->num_rows > 0) {
+            $_SESSION['alerts'][] = ['type' => 'error', 'message' => 'That facility is already reserved for the selected date and time slot!'];
+        } else {
+            $stmt = $conn->prepare("
+                INSERT INTO facility_bookings (user_id, facility_name, booking_date, time_slot, purpose, status) 
+                VALUES (?, ?, ?, ?, ?, 'pending')
+            ");
+            $stmt->bind_param("issss", $user_id, $facility_name, $booking_date, $time_slot, $purpose);
+            
+            if ($stmt->execute()) {
+                $_SESSION['alerts'][] = ['type' => 'success', 'message' => 'Booking request submitted! Waiting for admin approval.'];
+            } else {
+                $_SESSION['alerts'][] = ['type' => 'error', 'message' => 'Failed to process request. Please try again.'];
+            }
+        }
+    }
+
 
 
 
