@@ -115,7 +115,49 @@ unset($_SESSION['alerts']);
             <a href="schedules.php">Schedules & Matches</a>
             <a href="facility_booking.php" style="color: #0abf30;">Facility Bookings</a>
         </nav>
+<div class="user-auth">
+            <?php if (!empty($name)): ?>
+            <div class="profile-box">
+                <div class="avatar-circle"><?= strtoupper($name[0]) ?></div>
+                <div class="dropdown">
+                    <a href="profile.php">My account</a>
+                    <?php if (($_SESSION['role'] ?? '') === 'admin'): ?>
+                        <a href="admin.php">Admin Panel</a>
+                    <?php endif; ?>
+                    <a href="logout.php">Logout</a>
+                </div>
+            </div>
+            <?php else: ?>
+            <button type="button" class="login-btn-modal">Login</button>
+            <?php endif; ?>
+        </div>
+    </header>
 
+    <section class="booking-section">
+        <div class="booking-card">
+            <h2>Book Campus Facility</h2>
+            <p class="sub-text">Select a facility, date, and time slot. Campus staff will review your request.</p>
+
+            <form action="facility_booking.php" method="POST" class="booking-form">
+                <div class="form-group">
+                    <label for="facility_name">Facility / Equipment</label>
+                    <select name="facility_name" id="facility_name" required>
+                        <option value="">Select a Sport Facility</option>
+                        <option value="Athletics Track & Field Grid">Athletics Track & Field Grid</option>
+                        <option value="Badminton Court A (Indoor)">Badminton Court A (Indoor)</option>
+                        <option value="Badminton Court B (Indoor)">Badminton Court B (Indoor)</option>
+                        <option value="Chess Gear Set & Board">Chess Gear Set & Board</option>
+                        <option value="Main Cricket Pitch & Nets">Main Cricket Pitch & Nets</option>
+                        <option value="Martial Arts Dojo Room">Martial Arts Dojo Room</option>
+                        <option value="Netball Court (Outdoor)">Netball Court (Outdoor)</option>
+                        <option value="Powerlifting Gym Section">Powerlifting Gym Section</option>
+                        <option value="Rugby Training Ground">Rugby Training Ground</option>
+                        <option value="Swimming Pool (Lap Lanes)">Swimming Pool (Lap Lanes)</option>
+                        <option value="Table Tennis Gear & Arena">Table Tennis Gear & Arena</option>
+                        <option value="Tennis Court A (Outdoor)">Tennis Court A (Outdoor)</option>
+                        <option value="Volleyball Court">Volleyball Court</option>
+                    </select>
+                </div>
 
 
 
