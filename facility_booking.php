@@ -220,4 +220,61 @@ unset($_SESSION['alerts']);
         <?php endif; ?>
     </section>
 
+<?php if (!empty($alerts)): ?>
+    <div class="alert-box">
+        <?php foreach ($alerts as $alert): ?>
+        <div class="alert <?= $alert['type'] ?>">
+            <i class='bx <?= $alert['type'] === 'success' ? 'bxs-check-circle' : 'bxs-x-circle'; ?>'></i>
+            <span><?= htmlspecialchars($alert['message']); ?></span>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+
+    <div class="auth-modal">
+        <button type="button" class="close-btn-modal"><i class="bx bx-x-circle"></i></button>
+        <div class="form-box login">
+            <h2>Login</h2>
+            <form action="auth_process.php" method="POST">
+                <div class="input-box">
+                    <input type="email" name="email" placeholder="name@students.nsbm.ac.lk" required>
+                    <i class="bx bx-envelope"></i>
+                </div>
+                <div class="input-box">
+                    <input type="password" name="password" placeholder="Password" required>
+                    <i class="bx bx-lock-alt"></i>
+                </div>
+                <button type="submit" name="login_btn" class="btn">Login</button>
+                <p>Don't have an account? <a href="#" class="register-link">Register</a></p>
+            </form>
+        </div>
+
+        <div class="form-box register">
+            <h2>Register</h2>
+            <form action="auth_process.php" method="POST">
+                <div class="input-box">
+                    <input type="text" name="name" placeholder="Name" required>
+                    <i class="bx bx-user"></i>
+                </div>
+                <div class="input-box">
+                    <input type="email" name="email" placeholder="name@students.nsbm.ac.lk" required>
+                    <i class="bx bx-envelope"></i>
+                </div>
+                <div class="input-box">
+                    <input type="password" name="password" placeholder="Password" required>
+                    <i class="bx bx-lock-alt"></i>
+                </div>
+                <button type="submit" name="register_btn" class="btn">Register</button>
+                <p>Already have an account? <a href="#" class="login-link">Login</a></p>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.getElementById('booking_date').min = new Date().toISOString().split('T')[0];
+    </script>
+<?php include 'chat_widget.php'; ?>
+</body>
+</html>
 
