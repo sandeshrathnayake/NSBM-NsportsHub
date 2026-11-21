@@ -159,6 +159,65 @@ unset($_SESSION['alerts']);
                     </select>
                 </div>
 
+                 <div class="form-group">
+                    <label for="booking_date">Booking Date</label>
+                    <input type="date" name="booking_date" id="booking_date" required>
+                </div>
 
+                <div class="form-group">
+                    <label for="time_slot">Time Slot</label>
+                    <select name="time_slot" id="time_slot" required>
+                        <option value="">Select Time Slot</option>
+                        <option value="08:00 - 10:00">08:00 - 10:00 AM</option>
+                        <option value="10:00 - 12:00">10:00 - 12:00 PM</option>
+                        <option value="12:00 - 02:00">12:00 - 02:00 PM</option>
+                        <option value="14:00 - 16:00">02:00 - 04:00 PM</option>
+                        <option value="16:00 - 18:00">04:00 - 06:00 PM</option>
+                        <option value="18:00 - 20:00">06:00 - 08:00 PM</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="purpose">Purpose / Description</label>
+                    <textarea name="purpose" id="purpose" maxlength="1000" placeholder="e.g. Inter-faculty practice match, team workout" required></textarea>
+                </div>
+<button type="submit" name="submit_booking" class="booking-submit-btn">Send Booking Request</button>
+            </form>
+        </div>
+
+        <?php if (!empty($user_bookings)): ?>
+        <div class="admin-subcontainer" style="margin-top: 35px;">
+            <div class="view-header">
+                <h2><i class='bx bx-time-five'></i> My Booking History</h2>
+            </div>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Facility</th>
+                            <th>Date</th>
+                            <th>Slot</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($user_bookings as $booking): ?>
+    <tr>
+                            <td><strong><?= htmlspecialchars($booking['facility_name']) ?></strong></td>
+                            <td><?= date('M d, Y', strtotime($booking['booking_date'])) ?></td>
+                            <td><?= htmlspecialchars($booking['time_slot']) ?></td>
+                            <td>
+                                <span class="badge <?= htmlspecialchars($booking['status']) ?>">
+                                    <?= htmlspecialchars($booking['status']) ?>
+                                </span>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <?php endif; ?>
+    </section>
 
 
