@@ -5,6 +5,10 @@ require_once 'config.php';
 $user_id = $_SESSION['user_id'] ?? null;
 $name = $_SESSION['name'] ?? null;
 
+if (!isset($_SESSION['alerts']) || !is_array($_SESSION['alerts'])) {
+    $_SESSION['alerts'] = [];
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_booking'])) {
     if (!$user_id) {
         $_SESSION['alerts'][] = ['type' => 'error', 'message' => 'Please login to submit a facility booking!'];
@@ -42,58 +46,81 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_booking'])) {
         '18:00 - 20:00'
     ];
 
-    if (!in_array($facility_name, $allowed_facilities, true) || 
-        !in_array($time_slot, $allowed_slots, true) || 
-        empty($booking_date) || empty($purpose)) {
+    if (
+        !in_array($facility_name, $allowed_facilities, true) ||
+        !in_array($time_slot, $allowed_slots, true) ||
+        empty($booking_date) ||
+        empty($purpose)
+    ) {
         $_SESSION['alerts'][] = ['type' => 'error', 'message' => 'Please fill in all fields with valid options!'];
     } elseif ($booking_date < date('Y-m-d')) {
         $_SESSION['alerts'][] = ['type' => 'error', 'message' => 'Booking date cannot be in the past!'];
     } else {
         $check = $conn->prepare("
-            SELECT id FROM facility_bookings 
-            WHERE facility_name = ? AND booking_date = ? AND time_slot = ? 
+            SELECT id FROM facility_bookings
+            WHERE facility_name = ? AND booking_date = ? AND time_slot = ?
             AND status IN ('pending', 'approved')
         ");
-        $check->bind_param("sss", $facility_name, $booking_date, $time_slot);
-        $check->execute();
-        
-        if ($check->get_result()->num_rows > 0) {
-            $_SESSION['alerts'][] = ['type' => 'error', 'message' => 'That facility is already reserved for the selected date and time slot!'];
+
+        if (!$check) {
+            $_SESSION['alerts'][] = ['type' => 'error', 'message' => 'Database error while checking availability.'];
         } else {
-            $stmt = $conn->prepare("
-                INSERT INTO facility_bookings (user_id, facility_name, booking_date, time_slot, purpose, status) 
-                VALUES (?, ?, ?, ?, ?, 'pending')
-            ");
-            $stmt->bind_param("issss", $user_id, $facility_name, $booking_date, $time_slot, $purpose);
-            
-            if ($stmt->execute()) {
-                $_SESSION['alerts'][] = ['type' => 'success', 'message' => 'Booking request submitted! Waiting for admin approval.'];
+            $check->bind_param("sss", $facility_name, $booking_date, $time_slot);
+            $check->execute();
+            $exists = $check->get_result()->num_rows > 0;
+            $check->close();
+
+            if ($exists) {
+                $_SESSION['alerts'][] = ['type' => 'error', 'message' => 'That facility is already reserved for the selected date and time slot!'];
             } else {
-                $_SESSION['alerts'][] = ['type' => 'error', 'message' => 'Failed to process request. Please try again.'];
+                $stmt = $conn->prepare("
+                    INSERT INTO facility_bookings (user_id, facility_name, booking_date, time_slot, status)
+                    VALUES (?, ?, ?, ?, 'pending')
+                ");
+
+                if (!$stmt) {
+                    $_SESSION['alerts'][] = ['type' => 'error', 'message' => 'Database error while saving booking.'];
+                } else {
+                    $stmt->bind_param("isss", $user_id, $facility_name, $booking_date, $time_slot);
+
+                    if ($stmt->execute()) {
+                        $_SESSION['alerts'][] = ['type' => 'success', 'message' => 'Booking request submitted! Waiting for admin approval.'];
+                    } else {
+                        $_SESSION['alerts'][] = ['type' => 'error', 'message' => 'Failed to process request. Please try again.'];
+                    }
+                    $stmt->close();
+                }
             }
         }
     }
 
-     header('Location: facility_booking.php');
+    header('Location: facility_booking.php');
     exit();
 }
 
 $user_bookings = [];
 if ($user_id) {
     $stmt = $conn->prepare("
-        SELECT * FROM facility_bookings 
-        WHERE user_id = ? 
-        ORDER BY created_at DESC
+        SELECT facility_name, booking_date, time_slot, status
+        FROM facility_bookings
+        WHERE user_id = ?
+        ORDER BY id DESC
     ");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $user_bookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+    if ($stmt) {
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        while ($row = $res->fetch_assoc()) {
+            $user_bookings[] = $row;
+        }
+        $stmt->close();
+    }
 }
 
-$alerts = $_SESSION['alerts'] ?? [];
-unset($_SESSION['alerts']);
+$alerts = $_SESSION['alerts'];
+$_SESSION['alerts'] = [];
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -115,10 +142,10 @@ unset($_SESSION['alerts']);
             <a href="schedules.php">Schedules & Matches</a>
             <a href="facility_booking.php" style="color: #0abf30;">Facility Bookings</a>
         </nav>
-<div class="user-auth">
+        <div class="user-auth">
             <?php if (!empty($name)): ?>
             <div class="profile-box">
-                <div class="avatar-circle"><?= strtoupper($name[0]) ?></div>
+                <div class="avatar-circle"><?= htmlspecialchars(strtoupper($name[0])) ?></div>
                 <div class="dropdown">
                     <a href="profile.php">My account</a>
                     <?php if (($_SESSION['role'] ?? '') === 'admin'): ?>
@@ -159,7 +186,7 @@ unset($_SESSION['alerts']);
                     </select>
                 </div>
 
-                 <div class="form-group">
+                <div class="form-group">
                     <label for="booking_date">Booking Date</label>
                     <input type="date" name="booking_date" id="booking_date" required>
                 </div>
@@ -170,7 +197,7 @@ unset($_SESSION['alerts']);
                         <option value="">Select Time Slot</option>
                         <option value="08:00 - 10:00">08:00 - 10:00 AM</option>
                         <option value="10:00 - 12:00">10:00 - 12:00 PM</option>
-                        <option value="12:00 - 02:00">12:00 - 02:00 PM</option>
+                        <option value="12:00 - 14:00">12:00 - 02:00 PM</option>
                         <option value="14:00 - 16:00">02:00 - 04:00 PM</option>
                         <option value="16:00 - 18:00">04:00 - 06:00 PM</option>
                         <option value="18:00 - 20:00">06:00 - 08:00 PM</option>
@@ -181,7 +208,8 @@ unset($_SESSION['alerts']);
                     <label for="purpose">Purpose / Description</label>
                     <textarea name="purpose" id="purpose" maxlength="1000" placeholder="e.g. Inter-faculty practice match, team workout" required></textarea>
                 </div>
-<button type="submit" name="submit_booking" class="booking-submit-btn">Send Booking Request</button>
+
+                <button type="submit" name="submit_booking" class="booking-submit-btn">Send Booking Request</button>
             </form>
         </div>
 
@@ -202,9 +230,9 @@ unset($_SESSION['alerts']);
                     </thead>
                     <tbody>
                         <?php foreach ($user_bookings as $booking): ?>
-    <tr>
+                        <tr>
                             <td><strong><?= htmlspecialchars($booking['facility_name']) ?></strong></td>
-                            <td><?= date('M d, Y', strtotime($booking['booking_date'])) ?></td>
+                            <td><?= htmlspecialchars(date('M d, Y', strtotime($booking['booking_date']))) ?></td>
                             <td><?= htmlspecialchars($booking['time_slot']) ?></td>
                             <td>
                                 <span class="badge <?= htmlspecialchars($booking['status']) ?>">
@@ -220,10 +248,10 @@ unset($_SESSION['alerts']);
         <?php endif; ?>
     </section>
 
-<?php if (!empty($alerts)): ?>
+    <?php if (!empty($alerts)): ?>
     <div class="alert-box">
         <?php foreach ($alerts as $alert): ?>
-        <div class="alert <?= $alert['type'] ?>">
+        <div class="alert <?= htmlspecialchars($alert['type']) ?>">
             <i class='bx <?= $alert['type'] === 'success' ? 'bxs-check-circle' : 'bxs-x-circle'; ?>'></i>
             <span><?= htmlspecialchars($alert['message']); ?></span>
         </div>
@@ -272,9 +300,11 @@ unset($_SESSION['alerts']);
 
     <script src="script.js"></script>
     <script>
-        document.getElementById('booking_date').min = new Date().toISOString().split('T')[0];
+        const bookingDateInput = document.getElementById('booking_date');
+        if (bookingDateInput) {
+            bookingDateInput.min = new Date().toISOString().split('T')[0];
+        }
     </script>
 <?php include 'chat_widget.php'; ?>
 </body>
 </html>
-
