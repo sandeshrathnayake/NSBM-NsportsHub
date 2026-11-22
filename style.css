@@ -758,6 +758,7 @@ nav a:hover {
 .btn-action.reject:hover { background: #dc2626; }
 
 .no-data { text-align: center; color: #cbd5e1; font-size: 14px; }
+
 @media screen and (max-width: 992px) {
     header { padding: 10px 30px; }
     .admin-header { padding: 15px 30px; }
@@ -776,3 +777,48 @@ nav a:hover {
     .canva-card-container { flex-direction: column; }
 }
 
+.alert-box {
+    position: fixed;
+    top: 90px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 22px;
+    border-radius: 12px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    transform: translateX(120%);
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    pointer-events: auto;
+}
+
+.alert-box.show .alert {
+    transform: translateX(0);
+}
+
+.alert.success {
+    background: rgba(10, 191, 48, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.alert.error {
+    background: rgba(239, 68, 68, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.alert i {
+    font-size: 22px;
+}
