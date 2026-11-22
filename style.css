@@ -1099,3 +1099,99 @@ nav a:hover {
     color: #1e293b;
     font-weight: 500;
 }
+.booking-section {
+    max-width: 650px;
+    margin: 120px auto 40px; 
+    padding: 0 20px;
+}
+
+.booking-card {
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 35px 30px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: white;
+}
+
+.booking-card h2 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #ffffff;
+    text-align: center;
+}
+
+.booking-card .sub-text {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+.booking-form .form-group {
+    margin-bottom: 20px;
+}
+
+.booking-form label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #cbd5e1;
+}
+
+.booking-form select,
+.booking-form input[type="date"],
+.booking-form textarea {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 15px;
+    outline: none;
+    box-sizing: border-box;
+    transition: 0.3s ease;
+}
+
+.booking-form select option {
+    background: #0f172a;
+    color: #ffffff;
+}
+
+.booking-form select:focus,
+.booking-form input:focus,
+.booking-form textarea:focus {
+    border-color: #0abf30;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.booking-form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.booking-submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: #0abf30;
+    border: none;
+    border-radius: 40px;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s ease;
+    box-shadow: 0 4px 15px rgba(10, 191, 48, 0.4);
+}
+
+.booking-submit-btn:hover {
+    background: #089626;
+    box-shadow: 0 6px 20px rgba(10, 191, 48, 0.6);
+}
+
+
