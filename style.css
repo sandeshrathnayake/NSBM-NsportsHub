@@ -1194,4 +1194,20 @@ nav a:hover {
     box-shadow: 0 6px 20px rgba(10, 191, 48, 0.6);
 }
 
+.join-section select,
+.booking-form select,
+.booking-form input[type="date"] {
+    text-align: left !important;
+    text-align-last: left !important;
+}
+
+.join-section select option,
+.booking-form select option {
+    text-align: left !important;
+}
+
+.booking-form input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
 
