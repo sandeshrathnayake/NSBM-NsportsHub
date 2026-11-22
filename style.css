@@ -822,3 +822,38 @@ nav a:hover {
 .alert i {
     font-size: 22px;
 }
+
+.type-pill {
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-tag {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.status-tag.upcoming {
+    background: rgba(37, 99, 235, 0.25);
+    color: #60a5fa;
+    border: 1px solid rgba(96, 165, 250, 0.4);
+}
+
+.status-tag.live {
+    background: rgba(239, 68, 68, 0.25);
+    color: #f87171;
+    border: 1px solid rgba(248, 113, 113, 0.4);
+}
+
+.status-tag.completed {
+    background: rgba(100, 116, 139, 0.25);
+    color: #cbd5e1;
+    border: 1px solid rgba(203, 213, 225, 0.4);
+}
