@@ -64,7 +64,6 @@ if ($user_id) {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,6 +72,87 @@ if ($user_id) {
     <title>Sports Clubs - NSBM SportsHub</title>
     <link rel="stylesheet" href="style.css?v=9.9">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0f172a !important;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow-x: hidden;
+        }
+        .clubs-main {
+            background: #f5f5f7 !important;
+            color: #1d1d1f !important;
+            width: 100vw !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            border-radius: 0 !important;
+            padding: 60px 5% !important;
+            box-sizing: border-box !important;
+        }
+        .sports-grid {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 24px !important;
+            max-width: 1120px !important;
+            margin: 0 auto 40px auto !important;
+        }
+        .sport-card {
+            min-height: 245px !important;
+            padding: 26px 18px !important;
+            border-radius: 18px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+        @media (max-width: 980px) {
+            .sports-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+        @media (max-width: 650px) {
+            .sports-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        .clubs-main h2, 
+        .clubs-main label, 
+        .clubs-main .my-requests span {
+            color: #1d1d1f !important;
+        }
+        .clubs-main .note, 
+        .clubs-main .no-results {
+            color: #515154 !important;
+        }
+        .search-box {
+            max-width: 650px;
+            margin: 0 auto 40px auto !important;
+        }
+        .search-box input {
+            background: #ffffff !important;
+            color: #1d1d1f !important;
+            border: 1px solid #d2d2d7 !important;
+        }
+        .search-box i {
+            color: #86868b !important;
+        }
+        .join-section {
+            max-width: 650px;
+            margin: 0 auto;
+        }
+        .join-section form select {
+            background: #ffffff !important;
+            color: #1d1d1f !important;
+            border: 1px solid #d2d2d7 !important;
+        }
+        .my-requests {
+            max-width: 800px;
+            margin: 40px auto 0 auto;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -282,5 +362,6 @@ if ($user_id) {
             });
         });
     </script>
+<?php include 'chat_widget.php'; ?>
 </body>
 </html>
