@@ -43,3 +43,26 @@ if (isset($_POST['add_schedule_btn'])) {
     } else {
         $_SESSION['alerts'][] = ['type' => 'error', 'message' => 'Failed to add schedule.'];
     }
+
+ header('Location: admin.php?view=schedules');
+    exit();
+}
+
+if (isset($_GET['action']) && isset($_GET['id']) && !isset($_GET['type'])) {
+    $request_id = intval($_GET['id']);
+    $action = $_GET['action'];
+
+    $info_stmt = $conn->prepare("
+        SELECT u.name, u.email, uc.club_name 
+        FROM user_clubs uc 
+        JOIN users u ON uc.user_id = u.id 
+        WHERE uc.id = ?
+    ");
+    $info_stmt->bind_param("i", $request_id);
+    $info_stmt->execute();
+    $req_info = $info_stmt->get_result()->fetch_assoc();
+
+    if ($action === 'approve' && $req_info) {
+        $update_stmt = $conn->prepare("UPDATE user_clubs SET status = 'approved' WHERE id = ?");
+        $update_stmt->bind_param("i", $request_id);
+        $update_stmt->execute();
