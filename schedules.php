@@ -135,6 +135,94 @@ $upcoming_bookings = $conn->query("
             max-height: 320px;
             overflow-y: auto;
         }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .schedules-container {
+            width: 100%;
+            max-width: 1050px;
+            margin: 40px auto;
+            padding: 0 20px;
+            min-width: 0;
+        }
+
+        .schedule-section-card {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+        }
+
+        .table-responsive {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-responsive .admin-table {
+            width: 100%;
+            min-width: 560px;
+            border-collapse: collapse;
+        }
+
+        .admin-table th {
+            white-space: nowrap;
+        }
+
+        .no-data {
+            white-space: normal !important;
+        }
+
+        @media (max-width: 768px) {
+            body.profile-page-body {
+                background-attachment: scroll !important;
+            }
+
+            .schedules-container {
+                margin: 20px auto;
+                padding: 0 12px;
+            }
+
+            .schedule-section-card {
+                padding: 16px 14px;
+                margin-bottom: 20px;
+                border-radius: 16px;
+            }
+
+            .schedule-section-card h2 {
+                font-size: 17px;
+            }
+
+            .filter-bar {
+                padding: 10px 12px;
+                gap: 8px;
+            }
+
+            .filter-bar select,
+            .filter-bar input,
+            .filter-btn {
+                width: 100%;
+                font-size: 13px;
+            }
+
+            .filter-reset {
+                margin-left: 0;
+                padding-top: 4px;
+            }
+
+            .admin-table th,
+            .admin-table td {
+                padding: 8px 10px;
+                font-size: 12.5px;
+            }
+        }
     </style>
 </head>
 <body class="profile-page-body">
@@ -168,7 +256,7 @@ $upcoming_bookings = $conn->query("
     </header>
 
     <section class="profile-section">
-        <div style="max-width: 1050px; margin: 40px auto; padding: 0 20px;">
+        <div class="schedules-container">
             
             <div class="schedule-section-card">
                 <h2>Upcoming Matches & Training Fixtures</h2>
