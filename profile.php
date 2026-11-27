@@ -61,3 +61,41 @@ if ($club_stmt) {
             </div>
         </div>
     </header>
+
+ <section class="profile-section">
+        <div class="profile-card">
+            <div class="profile-icon-circle">
+                <i class='bx bx-user'></i>
+            </div>
+
+            <div class="info-pill">
+                <span><?= htmlspecialchars($name) ?></span>
+            </div>
+
+            <div class="info-pill">
+                <span><?= htmlspecialchars($email) ?></span>
+            </div>
+
+            <div class="unified-clubs-card">
+                <div class="clubs-card-header">
+                    <span>Joined Clubs</span>
+                </div>
+                <div class="clubs-card-body">
+                    <?php if ($clubs_result && $clubs_result->num_rows > 0): ?>
+                        <?php while ($club = $clubs_result->fetch_assoc()): ?>
+                            <div class="club-item">
+                                <span class="white-bullet">•</span>
+                                <span><?= htmlspecialchars($club['club_name']) ?></span>
+                            </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <p class="no-clubs">No clubs joined yet. Explore the <a href="sports_clubs.php">Sports Clubs</a> page to join teams!</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+</html>
