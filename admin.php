@@ -177,3 +177,4 @@ if ($search !== '') {
 
 $schedules_list = $conn->query("SELECT * FROM matches_schedules ORDER BY event_date DESC");
 ?>
+
